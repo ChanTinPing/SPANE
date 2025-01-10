@@ -1,0 +1,200 @@
+[
+    {
+        "trial_id": "44r8Q",
+        "best valid loss": 643.1138916015625,
+        "best loss epoch": 3000,
+        "params": {
+            "nn_width_server": 8,
+            "nn_num_server": 1,
+            "nn_width_value": 8,
+            "nn_num_value": 1,
+            "nn_width_adv": 16,
+            "nn_num_adv": 1,
+            "cluster_agg": [
+                0
+            ],
+            "lr": 0.01,
+            "easy": 0
+        }
+    },
+    {
+        "trial_id": "FFb8o",
+        "best valid loss": 706.4022216796875,
+        "best loss epoch": 2500,
+        "params": {
+            "nn_width_server": 8,
+            "nn_num_server": 1,
+            "nn_width_value": 8,
+            "nn_num_value": 1,
+            "nn_width_adv": 16,
+            "nn_num_adv": 1,
+            "cluster_agg": [
+                0
+            ],
+            "lr": 0.01,
+            "easy": 0
+        }
+    },
+    {
+        "trial_id": "ZHrai",
+        "best valid loss": 708.13818359375,
+        "best loss epoch": 2000,
+        "params": {
+            "nn_width_server": 8,
+            "nn_num_server": 1,
+            "nn_width_value": 8,
+            "nn_num_value": 1,
+            "nn_width_adv": 16,
+            "nn_num_adv": 1,
+            "cluster_agg": [
+                0
+            ],
+            "lr": 0.01,
+            "easy": 0
+        }
+    },
+    {
+        "trial_id": "LCutL",
+        "best valid loss": 713.2435302734375,
+        "best loss epoch": 3500,
+        "params": {
+            "nn_width_server": 8,
+            "nn_num_server": 1,
+            "nn_width_value": 8,
+            "nn_num_value": 1,
+            "nn_width_adv": 16,
+            "nn_num_adv": 1,
+            "cluster_agg": [
+                0
+            ],
+            "lr": 0.01,
+            "easy": 0
+        }
+    },
+    {
+        "trial_id": "qRguY",
+        "best valid loss": 729.3968505859375,
+        "best loss epoch": 4000,
+        "params": {
+            "nn_width_server": 8,
+            "nn_num_server": 1,
+            "nn_width_value": 8,
+            "nn_num_value": 1,
+            "nn_width_adv": 16,
+            "nn_num_adv": 1,
+            "cluster_agg": [
+                0
+            ],
+            "lr": 0.01,
+            "easy": 0
+        }
+    },
+    {
+        "trial_id": "R8v6g",
+        "best valid loss": 778.0773315429688,
+        "best loss epoch": 1750,
+        "params": {
+            "nn_width_server": 8,
+            "nn_num_server": 1,
+            "nn_width_value": 8,
+            "nn_num_value": 1,
+            "nn_width_adv": 16,
+            "nn_num_adv": 1,
+            "cluster_agg": [
+                0
+            ],
+            "lr": 0.01,
+            "easy": 0
+        }
+    },
+    {
+        "trial_id": "gfowa",
+        "best valid loss": 821.9539184570312,
+        "best loss epoch": 1500,
+        "params": {
+            "nn_width_server": 8,
+            "nn_num_server": 1,
+            "nn_width_value": 8,
+            "nn_num_value": 1,
+            "nn_width_adv": 16,
+            "nn_num_adv": 1,
+            "cluster_agg": [
+                0
+            ],
+            "lr": 0.01,
+            "easy": 0
+        }
+    },
+    {
+        "trial_id": "QHZlf",
+        "best valid loss": 883.0271606445312,
+        "best loss epoch": 2750,
+        "params": {
+            "nn_width_server": 8,
+            "nn_num_server": 1,
+            "nn_width_value": 8,
+            "nn_num_value": 1,
+            "nn_width_adv": 16,
+            "nn_num_adv": 1,
+            "cluster_agg": [
+                0
+            ],
+            "lr": 0.01,
+            "easy": 0
+        }
+    },
+    {
+        "trial_id": "08i8C",
+        "best valid loss": 893.6395263671875,
+        "best loss epoch": 2250,
+        "params": {
+            "nn_width_server": 8,
+            "nn_num_server": 1,
+            "nn_width_value": 8,
+            "nn_num_value": 1,
+            "nn_width_adv": 16,
+            "nn_num_adv": 1,
+            "cluster_agg": [
+                0
+            ],
+            "lr": 0.01,
+            "easy": 0
+        }
+    },
+    {
+        "trial_id": "oSCKb",
+        "best valid loss": 1242.9248046875,
+        "best loss epoch": 250,
+        "params": {
+            "nn_width_server": 8,
+            "nn_num_server": 1,
+            "nn_width_value": 8,
+            "nn_num_value": 1,
+            "nn_width_adv": 16,
+            "nn_num_adv": 1,
+            "cluster_agg": [
+                0
+            ],
+            "lr": 0.01,
+            "easy": 0
+        }
+    },
+    {
+        "trial_id": "U8ljM",
+        "best valid loss": 1913.1751708984375,
+        "best loss epoch": 4500,
+        "params": {
+            "nn_width_server": 8,
+            "nn_num_server": 1,
+            "nn_width_value": 8,
+            "nn_num_value": 1,
+            "nn_width_adv": 16,
+            "nn_num_adv": 1,
+            "cluster_agg": [
+                0
+            ],
+            "lr": 0.01,
+            "easy": 0
+        }
+    }
+]

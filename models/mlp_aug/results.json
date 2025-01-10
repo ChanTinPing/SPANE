@@ -1,0 +1,123 @@
+[
+    {
+        "trial_id": "NfJxi",
+        "params": {
+            "width": 32,
+            "layer_no": 2,
+            "lr": 0.01,
+            "perm_no": 24
+        },
+        "best valid loss": 797.9282836914062,
+        "best loss epoch": 1000
+    },
+    {
+        "trial_id": "OEpDR",
+        "params": {
+            "width": 32,
+            "layer_no": 2,
+            "lr": 0.01,
+            "perm_no": 24
+        },
+        "best valid loss": 832.76318359375,
+        "best loss epoch": 250
+    },
+    {
+        "trial_id": "4JuF5",
+        "params": {
+            "width": 32,
+            "layer_no": 2,
+            "lr": 0.01,
+            "perm_no": 24
+        },
+        "best valid loss": 930.3777465820312,
+        "best loss epoch": 2500
+    },
+    {
+        "trial_id": "3P5ac",
+        "params": {
+            "width": 32,
+            "layer_no": 2,
+            "lr": 0.01,
+            "perm_no": 24
+        },
+        "best valid loss": 1015.1109619140625,
+        "best loss epoch": 750
+    },
+    {
+        "trial_id": "H8GoN",
+        "params": {
+            "width": 32,
+            "layer_no": 2,
+            "lr": 0.01,
+            "perm_no": 24
+        },
+        "best valid loss": 1019.516357421875,
+        "best loss epoch": 1500
+    },
+    {
+        "trial_id": "wjoY3",
+        "params": {
+            "width": 32,
+            "layer_no": 2,
+            "lr": 0.01,
+            "perm_no": 24
+        },
+        "best valid loss": 1095.0455322265625,
+        "best loss epoch": 2500
+    },
+    {
+        "trial_id": "nDxCx",
+        "params": {
+            "width": 32,
+            "layer_no": 2,
+            "lr": 0.01,
+            "perm_no": 24
+        },
+        "best valid loss": 1126.263427734375,
+        "best loss epoch": 3750
+    },
+    {
+        "trial_id": "yWMwL",
+        "params": {
+            "width": 32,
+            "layer_no": 2,
+            "lr": 0.01,
+            "perm_no": 24
+        },
+        "best valid loss": 1210.6009521484375,
+        "best loss epoch": 250
+    },
+    {
+        "trial_id": "QMnCj",
+        "params": {
+            "width": 32,
+            "layer_no": 2,
+            "lr": 0.01,
+            "perm_no": 24
+        },
+        "best valid loss": 1269.387451171875,
+        "best loss epoch": 1500
+    },
+    {
+        "trial_id": "9e6Ei",
+        "params": {
+            "width": 32,
+            "layer_no": 2,
+            "lr": 0.01,
+            "perm_no": 24
+        },
+        "best valid loss": 1321.5303955078125,
+        "best loss epoch": 4250
+    },
+    {
+        "trial_id": "Zeale",
+        "params": {
+            "width": 32,
+            "layer_no": 2,
+            "lr": 0.01,
+            "perm_no": 24
+        },
+        "best valid loss": 1336.855224609375,
+        "best loss epoch": 250
+    }
+]

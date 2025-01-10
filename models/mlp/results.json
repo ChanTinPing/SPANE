@@ -1,0 +1,102 @@
+[
+    {
+        "trial_id": "ZDEi3",
+        "params": {
+            "width": 32,
+            "layer_no": 2,
+            "lr": 0.01
+        },
+        "best valid loss": 941.7921752929688,
+        "best loss epoch": 3750
+    },
+    {
+        "trial_id": "wthfH",
+        "params": {
+            "width": 32,
+            "layer_no": 2,
+            "lr": 0.01
+        },
+        "best valid loss": 961.310546875,
+        "best loss epoch": 750
+    },
+    {
+        "trial_id": "9pquk",
+        "params": {
+            "width": 32,
+            "layer_no": 2,
+            "lr": 0.01
+        },
+        "best valid loss": 970.2510986328125,
+        "best loss epoch": 750
+    },
+    {
+        "trial_id": "fZbPm",
+        "params": {
+            "width": 32,
+            "layer_no": 2,
+            "lr": 0.01
+        },
+        "best valid loss": 976.1072998046875,
+        "best loss epoch": 1500
+    },
+    {
+        "trial_id": "WWQEX",
+        "params": {
+            "width": 32,
+            "layer_no": 2,
+            "lr": 0.01
+        },
+        "best valid loss": 1018.8080444335938,
+        "best loss epoch": 1750
+    },
+    {
+        "trial_id": "7pHey",
+        "params": {
+            "width": 32,
+            "layer_no": 2,
+            "lr": 0.01
+        },
+        "best valid loss": 1093.9384765625,
+        "best loss epoch": 500
+    },
+    {
+        "trial_id": "HjlZM",
+        "params": {
+            "width": 32,
+            "layer_no": 2,
+            "lr": 0.01
+        },
+        "best valid loss": 1256.693115234375,
+        "best loss epoch": 250
+    },
+    {
+        "trial_id": "gdBP5",
+        "params": {
+            "width": 32,
+            "layer_no": 2,
+            "lr": 0.01
+        },
+        "best valid loss": 1272.2108154296875,
+        "best loss epoch": 2250
+    },
+    {
+        "trial_id": "cpqZR",
+        "params": {
+            "width": 32,
+            "layer_no": 2,
+            "lr": 0.01
+        },
+        "best valid loss": 1330.0079345703125,
+        "best loss epoch": 2500
+    },
+    {
+        "trial_id": "8zB1f",
+        "params": {
+            "width": 32,
+            "layer_no": 2,
+            "lr": 0.01
+        },
+        "best valid loss": 1480.00830078125,
+        "best loss epoch": 2500
+    }
+]

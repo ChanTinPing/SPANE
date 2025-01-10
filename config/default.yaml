@@ -1,0 +1,5 @@
+lr: 0.005         # 学习率
+gamma: 0.95       # 下一步 reward 的权重
+tau: 0.001
+
+test_interval: 200
