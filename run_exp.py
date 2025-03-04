@@ -1,5 +1,6 @@
 import os
 os.environ['TF_CPP_MIN_LOG_LEVEL'] = '3'
+# Prevent each parallel process from internally spawning multiple threads, avoiding CPU resource contention
 os.environ['OMP_NUM_THREADS'] = '1'
 os.environ['MKL_NUM_THREADS'] = '1'
 os.environ['OPENBLAS_NUM_THREADS'] = '1'
@@ -7,29 +8,35 @@ os.environ['VECLIB_MAXIMUM_THREADS'] = '1'
 os.environ['NUMEXPR_NUM_THREADS'] = '1'
 
 import numpy as np
+from types import SimpleNamespace
+import json
+from datetime import datetime
+import argparse
+from runx.logx import logx
 from schedgym.sched_env import SchedEnv
 from dqn.agent import DoubleDQNAgent
 from dqn.learner import QLearner
 from dqn.replay_memory import ReplayMemory
 from baseline_agent import get_fit_func
-from runx.logx import logx
-from datetime import datetime
-import json
 from common import linear_decay
-from config import Config
-import argparse
 
 DATA_PATH = f'data/Huawei-East-1-lt.csv'
 valid_inds = np.load(f'data/test_random_time_1000.npy')
+env_config = {
+    'env': 'recovering',
+    'N': 5,  
+    'cpu': 40,
+    'mem': 90,
+    'allow_release': True, 
+    'double_thr': 10,       # Memory threshold, if VM memory >= 10, the VM equally distributed
+}
 
-
-def obj(sp):
+def obj(sp: dict):
     # 1. Hyperparameters
-    env = 'recovering'
-    args = Config(env)  # Initialize configuration class
+    args = SimpleNamespace(**env_config)  # Initialize configuration class
     args.alg = 'dqn'
     args.mode = 'sym'  # Options: basic, sym
-    args.reward_type = 'basic'  # Options: basic, balance
+    args.reward_type = 'basic'
     args.exceed_vm = 20
 
     if args.mode == 'basic':
@@ -52,16 +59,17 @@ def obj(sp):
     args.weight_decay = 1e-8  # L2 regularization weight
     args.lr = sp['lr']  # Initial learning rate
     args.scheduler = 'step'  # Type of learning rate scheduler, see learner for details
+    args.gamma = 0.95  # Discount factor for the n-step reward
 
     # Epoch parameters
     args.online_epoch = 5000  # Number of batches of data learned in each epoch
     args.run_no = 1  # Number of data collections with the environment in each epoch
     args.run_interval = None if args.run_no > 0 else 2
     args.batch_size = 1024
-    args.test_interval = 250  # Interval (in epochs) for validation
+    args.valid_interval = 250  # Interval (in epochs) for validation
     args.valid_num = 150  # Number of experiments during validation, average taken
-    args.first_tot_wt = 37125.386  # Average result of the first valid_num experiments for First Fit during validation. Change this if valid_time or valid_num changes.
-    args.bal_tot_wt = 44063.02     # Average result of the first valid_num experiments for Balance Fit during validation
+    args.first_tot_wt = 235180.14  # Average result of the first valid_num experiments for First Fit during validation. Change this if valid_time or valid_num changes.
+    args.bal_tot_wt = 199748.26    # Average result of the first valid_num experiments for Balance Fit during validation
     args.target_update_interval = 100
 
     # Create log folder with current timestamp
@@ -126,7 +134,7 @@ def obj(sp):
             'tot_reward': np.mean(val_rewards),
             'tot_wt': total_wt_mean,
             'bal_tot_wt_diff': args.bal_tot_wt - total_wt_mean,
-            'first_tot_wt_diff': args.first_tot_wt - total_wt_mean
+            'first_tot_wt_diff': args.first_tot_wt - total_wt_mean,
         }
         logx.metric('val', val_metric, epoch)
 
@@ -143,7 +151,7 @@ def obj(sp):
         agent.save(model_path)
 
     def interact(env, agent, memory_on, eps):
-        initial_index = np.random.randint(0, 80000)
+        initial_index = np.random.randint(0, 50000)
         return run(env, initial_index, agent, memory_on, eps, False)
 
     # 3. Preparation
@@ -167,7 +175,7 @@ def obj(sp):
 
     # 4. Pre-collect data
     for _ in range(100):
-        initial_time = np.random.randint(0, 80000)
+        initial_time = np.random.randint(0, 50000)
         eps = args.eps_1
         run(env, initial_time, agent, memory_on, eps, False)
 
@@ -193,7 +201,7 @@ def obj(sp):
         logx.metric('train', {'eps': eps, 'tot_reward': train_reward, 'loss': loss}, epoch)
 
         # Validation phase
-        if epoch % args.test_interval == 0:
+        if epoch % args.valid_interval == 0:
             result = validate(env, agent, args, epoch)
             if best_result < result:
                 best_result = result

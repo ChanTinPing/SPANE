@@ -6,10 +6,16 @@ from baseline_agent import get_fit_func
 from tqdm import trange
 from common import stage_mean
 DATA_PATH = "data/Huawei-East-1-lt.csv"
-valid_inds = np.load('data/test_random_time_1000.npy')
-first_fit = get_fit_func(0, 40, 90)
 
-def run_episode(env, agent, index):
+# Validation Result
+valid_inds = np.load('data/valid_random_time_150.npy')
+num_episodes = 150
+# Test Result
+# valid_inds = np.load('data/test_random_time_1000.npy')
+# num_episodes = 1000
+
+first_fit = get_fit_func(0, 40, 90)
+def run_episode(env: SchedEnv, agent, index):
     # 1. Use First Fit to determine N_vm for the comparison experiment
     state = env.reset(index, exceed_vm=1)
     done = False
@@ -39,7 +45,6 @@ def main():
     bal_fit = get_fit_func(2, cpu, mem)    # Balance Fit agent
 
     # Run multiple episodes
-    num_episodes = 150
     res_f = []  # Results for First Fit
     res_b = []  # Results for Balance Fit
     for episode in trange(num_episodes):

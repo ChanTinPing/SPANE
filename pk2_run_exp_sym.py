@@ -75,7 +75,6 @@ def obj(sp):
     else:
         args.run_interval = 2
     args.batch_size = 1024     # 每次训练的数据量
-    args.test_interval = 250   # 每多少个epoch做验证
     args.target_update_interval = 100
 
     '2. 函数'

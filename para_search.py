@@ -1,4 +1,5 @@
 ''' Hyperparameter Search '''
+from itertools import product, cycle, islice
 import random
 import subprocess
 import json
@@ -55,12 +56,12 @@ def main():
         'nn_num_value': [1, 2, 3],
         'nn_width_adv': [4, 8, 16, 32],
         'nn_num_adv': [1, 2, 3, 4],
-        'cluster_agg': [[0], [1], [2], [0,1], [0,2], [1,2], [0,1,2]],
+        'cluster_agg': [[0]],    # [[0], [1], [2], [0,1], [0,2], [1,2], [0,1,2]], {0: 'mean', 1: 'max', 2: 'std'}
         'lr': [0.001, 0.01, 0.1]
     }
     # Total trials and number of concurrent trials
     total_trials = 1000
-    concurrent_trials = 25
+    concurrent_trials = 30
 
     # Create log directory
     current_time = datetime.now()
@@ -69,16 +70,26 @@ def main():
     os.makedirs(log_dir, exist_ok=True)
     os.makedirs(f'{log_dir}/result', exist_ok=True)
 
-    # Generate all trial configurations
+    # Generate all trial configurations (random combination, for huge param_space)
     all_trials = []
     for _ in range(total_trials):
         params = {k: random.choice(v) for k, v in param_space.items()}
         trial_id = generate_trial_id()
         all_trials.append((params, trial_id, log_dir))
+    # Generate all trial configurations (normal combination, for small param_space)
+    # keys = list(param_space.keys())
+    # all_param_combinations = list(product(*[param_space[k] for k in keys]))
+    # trial_combinations = list(islice(cycle(all_param_combinations), total_trials))
+    # all_trials = []
+    # for values in trial_combinations:
+    #     params = dict(zip(keys, values))
+    #     trial_id = generate_trial_id()
+    #     all_trials.append((params, trial_id, log_dir))
 
     # Use multiprocessing with interruption handling
     manager = Manager()
     results = manager.list()
+    
     # Signal handler for interruption
     def signal_handler(signum, frame):
         print("Interrupt received, terminating all running trials...")
