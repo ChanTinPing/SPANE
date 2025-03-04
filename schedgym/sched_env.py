@@ -205,7 +205,7 @@ class SchedEnv(gym.Env):
             return self.cluster.describe()
         elif attr_name == 'full':
             return request
-        elif attr_name == 'total_wait_time':  # 新增：返回总等待时间
+        elif attr_name == 'total_wait_time':
             return self.total_wait_time
         elif attr_name == 'length_vm':
             return (self.index - self.init_index)

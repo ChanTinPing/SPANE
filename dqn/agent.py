@@ -25,20 +25,19 @@ def init_weights(m):
         if m.bias is not None:
             init.constant_(m.bias, 0)
 
-def check_obs(obs):  # 确保type是tensor，检查形状
+def check_obs(obs):  # Ensure the type is tensor and check the shape
     if not isinstance(obs, th.Tensor): obs = th.tensor(obs, dtype=th.float32)
     if   len(obs.shape) == 3:  return obs.unsqueeze(0)
     elif len(obs.shape) == 4:  return obs       # (batch size, ., ., .)
     else                    :  raise ValueError("Shape Incorrect")
 
-def check_feat(feat):  # 确保type是tensor，检查形状
+def check_feat(feat):  # Ensure the type is tensor and check the shape
     if not isinstance(feat, th.Tensor): feat = th.tensor(feat, dtype=th.float32)
     if   len(feat.shape) == 1:  return feat.unsqueeze(0)
     elif len(feat.shape) == 2:  return feat       # (batch size, ...)
     else                     :  raise ValueError("Shape Incorrect")
 
 def normalize_data(obs, feat, cpu, mem):
-    # 数据归一化
     obs[:, :, :, 0]  = obs[:, :, :, 0] / cpu
     obs[:, :, :, 1]  = obs[:, :, :, 1] / mem
     feat[:, 0] = feat[:, 0] / cpu
@@ -65,10 +64,10 @@ class DQNAgent(nn.Module):
         self.cpu = cpu
         self.mem = mem
       
-        # 一维层
+        # flatten (to 1D) layer
         self.flat = nn.Flatten()
 
-        # 隐藏层
+        # hidden layers
         nn_widths.append(N * 2)
         input_size = (N * 2 * 2) + 3  
 
@@ -82,25 +81,25 @@ class DQNAgent(nn.Module):
                 nn.ReLU()
             ])
 
-        # Value, Adv 层
+        # Value, Adv layers
         self.value = nn.Linear(nn_widths[-1], 1)
         self.adv = nn.Linear(nn_widths[-1], N * 2)
 
-        self.apply(init_weights)  # 初始化权重
+        self.apply(init_weights) # initialize weights
 
     def forward(self, state):
         obs, feat = state[0], state[1]
-        obs  = check_obs(obs)   # 保证 obs  是 tensor 而且形状是 (batch_size 默认是 1, N, 2, 2)
-        feat = check_feat(feat)  # 保证 feat 是 tensor 而且形状是 (batch_size 默认是 1, 2, 2, 2)
+        obs  = check_obs(obs)   # Ensure obs is a tensor with shape (batch_size, N, 2, 2) (default batch_size = 1)
+        feat = check_feat(feat)  # Ensure feat is a tensor with shape (batch_size, 2, 2, 2) (default batch_size = 1)
         obs, feat = normalize_data(obs, feat, self.cpu, self.mem)
 
         obs, feat = self.flat(obs), self.flat(feat)
         x = th.cat([obs, feat], dim=-1)
         for layer in self.fc:
             x = layer(x)
-        adv = self.adv(x)  # 优势函数
-        value = self.value(x)  # 状态价值函数
-        q_values = value + adv - th.mean(adv, dim=1, keepdim=True)  # 详见 Dueling DQN
+        adv = self.adv(x)  
+        value = self.value(x)  
+        q_values = value + adv - th.mean(adv, dim=1, keepdim=True)  # Dueling DQN detail
         return q_values
 
 class DQNAgent_sym(nn.Module): 
@@ -109,38 +108,38 @@ class DQNAgent_sym(nn.Module):
         self.cpu = cpu
         self.mem = mem
         self.N   = N
-        self.aggs = aggs  # aggregation 操作
+        self.aggs = aggs  # aggregation (mean)
         self.easy = easy
         feat_dim = 3
 
-        # embedding 层
+        # embedding layers
         width_server, relu_no = nn_widths['server']
         self.server_embedding = get_layers(relu_no, 4, width_server, width_server)
         width_cluster = width_server * len(aggs)
-        # Value 层
+        # Value layers
         width_value, relu_no = nn_widths['value']
         self.value_layers     = get_layers(relu_no, width_cluster + feat_dim, width_value, 1)
-        # Advantages 层
+        # Advantages layers
         width_adv, relu_no = nn_widths['adv']
         if easy:
             self.adv_layers = get_layers(relu_no, width_server, width_adv, 2)
         else:
             self.adv_layers = get_layers(relu_no, width_server + width_cluster + feat_dim, width_adv, 2)
 
-        self.apply(init_weights)  # 初始化权重
+        self.apply(init_weights)  # initialize weights
 
     def forward(self, state, is_easy_valid=False):
-        # 处理数据
+        # Data process
         obs, feat = state[0], state[1]
-        obs, feat = check_obs(obs), check_feat(feat)   # 保证 obs 是 tensor 而且形状是 (batch_size 默认是 1, N, 2, 2), feat 是 （batch_size, 2, 2, 2)
+        obs, feat = check_obs(obs), check_feat(feat)   # Ensure obs is a tensor with shape (batch_size, N, 2, 2) (default batch_size = 1), and feat has shape (batch_size, 2, 2, 2).
         obs, feat = normalize_data(obs, feat, self.cpu, self.mem)
 
         if not is_easy_valid:
-            # 计算server
+            # calc server
             server_embeddings = obs.view(-1, self.N, 4)
             for layer in self.server_embedding:
                 server_embeddings = layer(server_embeddings)
-            # 计算cluster embedding
+            # calc cluster embedding
             agg_dict = {
                 'mean': th.mean,
                 'max': lambda x, dim: th.max(x, dim)[0],
@@ -151,12 +150,12 @@ class DQNAgent_sym(nn.Module):
                 cluster_embedding.append(agg_dict[agg](server_embeddings, dim=1))
             cluster_embedding = th.cat(cluster_embedding, dim=1)
 
-            # 计算value
+            # calc value
             value = th.cat([cluster_embedding, feat], dim=1)
             for layer in self.value_layers:
                 value = layer(value)
 
-            # 计算advantages
+            # calc advantages
             if self.easy:
                 advs = server_embeddings
             else:
@@ -167,17 +166,17 @@ class DQNAgent_sym(nn.Module):
                 advs = layer(advs)
             advs = advs.view(-1, 2 * self.N)
 
-            q_values = value + advs - th.mean(advs, dim=1, keepdim=True)  # 详见 Dueling DQN
+            q_values = value + advs - th.mean(advs, dim=1, keepdim=True)
             return q_values
 
         else:
-            advs = obs.view(-1, self.N, 4)   # !!!!!!!!!!!!!!!
+            advs = obs.view(-1, self.N, 4)  
             for layer in self.adv_layers:
                 advs = layer(advs)
             advs = advs.view(-1, 2 * self.N)   
             return advs
         
-class DoubleDQNAgent:  # 将 DQN 网络分成两个，有助于稳定效果，详见 Double DQN
+class DoubleDQNAgent:  # Split the DQN network into two parts to improve stability. See Double DQN for details.
     def __init__(self, args, mode='basic'):
         if mode == 'basic':
             self.online_net = DQNAgent(args.N, args.cpu, args.mem, args.nn_width.copy())
@@ -198,14 +197,14 @@ class DoubleDQNAgent:  # 将 DQN 网络分成两个，有助于稳定效果，�
     def select_action(self, state, epsilon, is_easy_valid=False):  # state = {'obs':..., 'feat':..., 'avail':...}
         avail = state['avail']
 
-        if len(avail.shape) == 1:  # 单个env情况
+        if len(avail.shape) == 1:  # Single env case
             if np.random.rand() < epsilon:
                 valid_action = np.random.choice(np.where(avail == 1)[0])
                 return valid_action.item()
             else:
                 with th.no_grad():
                     q_values = self.online_net([state['obs'], state['feat']])[0]
-                    q_values[avail == 0] = float('-inf')  # 将不可用动作的Q值设为负无穷
+                    q_values[avail == 0] = float('-inf')  # Set the Q-values of unavailable actions to negative infinity
                     return th.argmax(q_values).cpu().item()
 
         elif len(avail.shape) == 2: # 多个env
@@ -215,18 +214,16 @@ class DoubleDQNAgent:  # 将 DQN 网络分成两个，有助于稳定效果，�
             else:
                 with th.no_grad():
                     q_values = self.online_net([state['obs'], state['feat']])
-                    q_values[avail == 0] = float('-inf')  # 将不可用动作的Q值设为负无穷
+                    q_values[avail == 0] = float('-inf')  # Set the Q-values of unavailable actions to negative infinity
                     return th.argmax(q_values, dim=1).cpu().numpy()
                     
         else:
             raise ValueError("avail shape incorrect!")
            
     def save(self, filepath):
-        # 检查并创建目录
         dir_path = os.path.dirname(filepath)
         if not os.path.exists(dir_path):
             os.makedirs(dir_path)
-        # 保存模型
         th.save(self.online_net.state_dict(), filepath)
 
     def load(self, filepath):

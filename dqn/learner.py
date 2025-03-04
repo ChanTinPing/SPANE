@@ -7,16 +7,16 @@ class QLearner:
     def __init__(self, agent, args):
         self.args      = args
         self.agent     = agent
-        weight_decay   = getattr(args, 'weight_decay', 0)  # 如果没有args.weight_decay则设成0
+        weight_decay   = getattr(args, 'weight_decay', 0)  # Set to 0 if args.weight_decay is not provided
         self.optimizer = optim.Adam(self.agent.online_net.parameters(), lr=args.lr, weight_decay=weight_decay)
         self.loss_fn   = nn.MSELoss()
         self.learn_cnt = 0
 
-        # 学习率调度器
+        # Learning rate scheduler
         if args.scheduler == 'step':
-            self.scheduler = optim.lr_scheduler.StepLR(self.optimizer, step_size=100, gamma=0.99)  # 每1000步衰减学习率
+            self.scheduler = optim.lr_scheduler.StepLR(self.optimizer, step_size=100, gamma=0.99)  # Decay learning rate every 1000 steps
         elif args.schduler == 'cos':
-            self.scheduler_cosine = optim.lr_scheduler.CosineAnnealingLR(self.optimizer, T_max=3000)  # 余弦退火
+            self.scheduler_cosine = optim.lr_scheduler.CosineAnnealingLR(self.optimizer, T_max=3000)  # Cosine annealing
 
     @th.no_grad()
     def update_target_network(self):
@@ -34,41 +34,40 @@ class QLearner:
         if memory.__len__() < batch_size:
             return None
 
-        # 从经验回放缓冲区中采样
+        # Sample from experience replay buffer
         transitions = memory.sample(batch_size)
         batch = list(zip(*transitions))
 
-        # 确保所有数据都是PyTorch张量，并转换为float32类型
+        # Ensure all data are PyTorch tensors and convert to float32
         obs         = th.stack([self.to_tensor(b) for b in batch[0]])
         feat        = th.stack([self.to_tensor(b) for b in batch[1]])
         actions     = th.tensor(batch[2], dtype=th.int64)  # actions usually are indices, so int64
         rewards     = th.tensor(batch[3], dtype=th.float32)
         next_obs    = th.stack([self.to_tensor(b) for b in batch[4]])
         next_feat   = th.stack([self.to_tensor(b) for b in batch[5]])
-        dones       = th.tensor(np.array(batch[6], dtype=int)).view(-1).float()  # 转换为float32
-        actual_ns   = th.tensor(batch[7], dtype=th.float32)  # 实际步数
+        dones       = th.tensor(np.array(batch[6], dtype=int)).view(-1).float()  # Convert to float32
+        actual_ns   = th.tensor(batch[7], dtype=th.float32)  # actual steps
 
-        # 组合 states 和 next_states
+        # Combine into states and next_states
         states      = [obs, feat]
         next_states = [next_obs, next_feat]
 
-        # 计算当前状态的Q值
+        # Compute Q-value of current state
         q_values = self.agent.online_net(states)
-        # 计算下一个状态的Q值（来自在线网络）
+        # Compute Q-value of next state (from online network)
         next_q_values = self.agent.online_net(next_states)
-        # 计算下一个状态的Q值（来自目标网络）
+        # Compute Q-value of next state (from target network)
         next_q_state_values = self.agent.target_net(next_states).detach()
 
-        # 选择当前动作的Q值
+        # Select Q-value of current action
         q_value = q_values.gather(1, actions.unsqueeze(1)).squeeze(1)
-        # 使用目标网络选择下一个状态的Q值
+        # Select Q-value of next state using target network
         next_q_value = next_q_state_values.gather(1, th.argmax(next_q_values, dim=1, keepdim=True)).squeeze(1)
-        # 计算期望的Q值（多步返回）
+        # Compute expected Q-value (multi-step return)
         expected_q_value = rewards + (self.args.gamma ** actual_ns) * next_q_value * (1 - dones)
 
-        # 计算损失
+        # Backpropagation
         loss = self.loss_fn(q_value, expected_q_value)
-        # 优化步骤
         self.optimizer.zero_grad()
         loss.backward()
         self.optimizer.step()

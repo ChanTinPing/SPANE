@@ -1,7 +1,7 @@
 """
-DQN 模块实现了基于深度Q网络 (DQN) 和双重DQN (Double DQN) 的强化学习算法。主要包含以下几个模块：
+The DQN module implements reinforcement learning algorithms based on Deep Q-Networks (DQN) and Double DQN. It mainly consists of the following components:
 
-1. DoubleDQNAgent (DQNagent.py) 包含dueling与double
+1. DoubleDQNAgent (DQNagent.py) includes dueling and double
 2. QLearner (learner.py)
 3. ReplayMemory (replay_memory.py)
 """
@@ -9,55 +9,50 @@ DQN 模块实现了基于深度Q网络 (DQN) 和双重DQN (Double DQN) 的强化
 """
 DoubleDQNAgent (DQNagent.py)
 
-创建:
+Initialization:
 - DoubleDQNAgent(args)
-    - args: 包含训练过程中的超参数
+    - args: Hyperparameters used during the training process
 """
 
 """
 QLearner (learner.py)
-提供了一个训练函数和更新目标网络的功能。
+Provides a training function, and functionality for target network learning.
 
-创建：
+Initialization:
 - QLearner(agent, args)
-    - agent: DoubleDQNAgent 对象
-    - args: 包含训练过程中的超参数
+    - agent: DoubleDQNAgent object
+    - args: Hyperparameters used during the training process
 
-使用：
+Use:
 - learner.train(memory, batch_size)
-    - 从 memory 里抽取 batch 训练
-    - memory: ReplayMemory 对象
-    - batch_size: 批处理大小
+    - Samples a batch from memory for training
+    - memory: ReplayMemory object
 """
 
 """
 ReplayMemory (replay_memory.py)
-- 实现了一个用于存储和采样经验的回放缓冲区。
-- 支持n步返回用于计算累积奖励。
+- Implements a replay buffer for storing and sampling experiences.
+- Supports n-step returns for calculating accumulated rewards.
 
-创建：
+Initialization:
 - ReplayMemory(capacity, n_step, gamma)
-    - capacity: 缓冲区的容量
-    - n_step: n步长度, 用于计算多步返回
-    - gamma: 折扣因子
+    - capacity: Buffer capacity
+    - n_step: Length of n steps, used for calculating multi-step returns
+    - gamma: Discount factor
 
-使用：
+Use:
 - memory.push(obs, feat, action, reward, next_obs, next_feat, done)
-    - obs: 形状为 (N, 2, 2)
-    - feat: 形状为 (2, 2, 2)
-    - action: 动作 
-    - reward: 奖励
-    - next_obs: 形状为 (N, 2, 2)
-    - next_feat: 形状为 (2, 2, 2)
-    - done: 是否完成
+    - obs: Shape (N, 2, 2)
+    - feat: Shape (2, 2, 2)
+    - next_obs: Shape (N, 2, 2)
+    - next_feat: Shape (2, 2, 2)
 
 - memory.sample(batch_size)
-    - batch_size: 批处理大小
-    - 输出: transitions, 每个元素包含 (obs, feat, action, reward, next_obs, next_feat, done, actual_n)
-        - 这里的 next_obs 是 actual_n 步后的了
+    - Output: transitions, each element contains (obs, feat, action, reward, next_obs, next_feat, done, actual_n)
+        - Here, next_obs refers to the state after actual_n steps
 
-数据结构：
-- n_step_buffer: 一个临时缓冲区, 用于存储最近的n步经验
-- memory: 主缓冲区，用于存储处理后的多步经验
-- 每个经验包含 (obs, feat, action, reward, next_obs, next_feat, done, actual_n)
+Data structure:
+- n_step_buffer: A temporary buffer used to store the most recent n steps of experiences
+- memory: The main buffer for storing processed multi-step experiences
+- Each experience contains (obs, feat, action, reward, next_obs, next_feat, done, actual_n)
 """
