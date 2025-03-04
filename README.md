@@ -15,7 +15,8 @@ The scheduling environment used in this study is implemented in the [schedgym/sc
 
 There are two termination conditions for the environment.  
 1. The environment terminates after scheduling a certain number of VMs.  
-2. The environment terminates when the first VM cannot be immediately deployed, plus an additional number of scheduled VMs.  
+2. The environment terminates when the first VM cannot be immediately deployed, plus an additional number of scheduled VMs.
+  
 When selecting the VM queue, we first pick an initial VM from the dataset and apply the **first-fit scheduling** strategy until encountering the first VM that cannot be deployed. The total number of scheduled VMs under this first-fit strategy, plus 40, determines the length of the VM queue corresponding to this initial VM.
 
 ## Methods
@@ -24,10 +25,13 @@ There are two main types of RL agents:
 2. Neural network agents trained with DQN, located in the [`dqn`](dqn) folder.
 
 ## DQN Training + Hyperparameters Selection
-The `para_search.py` and `run_exp.py` scripts are used to find the best-performing hyperparameters and generate the corresponding agent. Running `para_search.py` will create a `log_para_{time}` directory to store the results.  
+The `para_search.py` and `run_exp.py` scripts are used to find the best-performing hyperparameters and generate the corresponding agent. Running `para_search.py` will create a `log_para_{time}` directory to store the results. `run_exp.py` is the training script, while `para_search.py` is responsible for running `run_exp.py` in parallel.
+
 - The **`fig`** subfolder stores the results of various hyperparameters in the form of distribution plots.  
 - The **`result`** subfolder contains the hyperparameters and results of each experiment, with an `all_results.json` file that consolidates the results of all experiments.  
-- The **`tensorboard`** subfolder stores model data and process data (such as training and validation loss) for each experiment. Model parameters are stored in the **`models`** subfolder within the corresponding experiment directory. To view process data, use the command:  
+- The **`tensorboard`** subfolder stores model data and process data (such as training and validation loss) for each experiment. Model parameters are stored in the **`models`** subfolder within the corresponding experiment directory. 
+
+To view process data, use the command:  
 ```bash
 tensorboard --logdir=log_para_{time}
 ```
@@ -35,8 +39,6 @@ This command displays data for all experiments. To view data for a specific expe
 ```bash
 tensorboard --logdir=log_para_{time}/{trial_id}_...
 ```
-
-`run_exp.py` is the training script, while `para_search.py` is responsible for running `run_exp.py` in parallel.
 
 ## Experiment (Wait Time Analysis)
 
