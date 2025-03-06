@@ -10,7 +10,6 @@ os.environ['NUMEXPR_NUM_THREADS'] = '1'
 import numpy as np
 from types import SimpleNamespace
 import json
-from datetime import datetime
 import argparse
 from runx.logx import logx
 from schedgym.sched_env import SchedEnv
@@ -18,7 +17,7 @@ from dqn.agent import DoubleDQNAgent
 from dqn.learner import QLearner
 from dqn.replay_memory import ReplayMemory
 from baseline_agent import get_fit_func
-from common import linear_decay
+from common import linear_decay, trimmed_mean
 
 DATA_PATH = f'data/Huawei-East-1-lt.csv'
 valid_inds = np.load(f'data/test_random_time_1000.npy')
@@ -35,12 +34,12 @@ def obj(sp: dict):
     # 1. Hyperparameters
     args = SimpleNamespace(**env_config)  # Initialize configuration class
     args.alg = 'dqn'
-    args.mode = 'sym'  # Options: basic, sym
+    args.mode = 'basic'  # Options: basic, sym
     args.reward_type = 'basic'
     args.exceed_vm = 20
 
     if args.mode == 'basic':
-        args.nn_width = [32, 32]  # Neural network hidden layer dimensions
+        args.nn_width = [sp['nn_width']] * sp['nn_num'] # Neural network hidden layer dimensions
     if args.mode == 'sym':
         args.nn_width = {
             'server': (sp['nn_width_server'], sp['nn_num_server']),
@@ -68,17 +67,15 @@ def obj(sp: dict):
     args.batch_size = 1024
     args.valid_interval = 250  # Interval (in epochs) for validation
     args.valid_num = 150  # Number of experiments during validation, average taken
-    args.first_tot_wt = 235180.14  # Average result of the first valid_num experiments for First Fit during validation. Change this if valid_time or valid_num changes.
-    args.bal_tot_wt = 199748.26    # Average result of the first valid_num experiments for Balance Fit during validation
+    args.first_tot_wt = 235180.14  # Trimmed average result of the first valid_num experiments for First Fit during validation. Change this if valid_time or valid_num changes.
+    args.bal_tot_wt = 199748.26    # Trimmed average result of the first valid_num experiments for Balance Fit during validation
     args.target_update_interval = 100
 
     # Create log folder with current timestamp
-    current_time = datetime.now()
-    formatted_time = current_time.strftime("%Y%m%d_%H%M%S")
-    logpath = f"{sp['log_dir']}/tensorboard/{sp['trial_id']}_{args.alg}_{args.env}_{formatted_time}"
+    logpath = f"{sp['log_dir']}/tensorboard/{sp['trial_id']}_{args.alg}"
 
-    # 2. Functions
-    def _run(env, initial_index, agent, fit_func, memory, eps, is_valid):
+    # 2. Functions    
+    def run(env: SchedEnv, initial_index, agent: DoubleDQNAgent, memory: ReplayMemory, eps, is_valid):
         ''' # Interact with the environment to return rewards or store experiences (required for online training) '''
         # First Fit to determine N_vm
         state = env.reset(initial_index, exceed_vm=1)
@@ -99,7 +96,7 @@ def obj(sp: dict):
         done = False
         while not done:
             # Agent action selection
-            action = agent.select_action(state, eps) if agent else fit_func(state)
+            action = agent.select_action(state, eps)
             state2, reward, done = env.step(action)
             tot_reward += reward
 
@@ -114,9 +111,6 @@ def obj(sp: dict):
 
         return tot_reward
 
-    def run(env, initial_index, agent, memory, eps, is_valid):
-        return _run(env, initial_index, agent, None, memory, eps, is_valid)
-
     def validate(env, agent, args, epoch):
         val_rewards = []
         total_wts = []
@@ -129,9 +123,9 @@ def obj(sp: dict):
             total_wts.append(total_wait_time)
 
         # Record validation results
-        total_wt_mean = np.mean(total_wts)
+        total_wt_mean = trimmed_mean(total_wts)
         val_metric = {
-            'tot_reward': np.mean(val_rewards),
+            'tot_reward': trimmed_mean(val_rewards),
             'tot_wt': total_wt_mean,
             'bal_tot_wt_diff': args.bal_tot_wt - total_wt_mean,
             'first_tot_wt_diff': args.first_tot_wt - total_wt_mean,
@@ -182,6 +176,7 @@ def obj(sp: dict):
     # 5. Online training
     epoch = 0
     best_result = -100000
+    best_result_epoch = 0
     same_result_count = 0
     last_result = None
     for _ in range(args.online_epoch + 1):
@@ -205,6 +200,7 @@ def obj(sp: dict):
             result = validate(env, agent, args, epoch)
             if best_result < result:
                 best_result = result
+                best_result_epoch = epoch
             same_result_count = same_result_count + 1 if result == last_result else 0
             last_result = result
             # Early stopping if the result is the same for three consecutive validations
@@ -212,32 +208,26 @@ def obj(sp: dict):
                 break
         epoch += 1
 
-    return best_result
+    return best_result, best_result_epoch
 
 
 if __name__ == "__main__":
     # Hyperparameters
     parser = argparse.ArgumentParser(description='Run DQN experiment')
-    parser.add_argument('--nn_width_server', type=int, required=True)
-    parser.add_argument('--nn_num_server', type=int, required=True)
-    parser.add_argument('--nn_width_value', type=int, required=True)
-    parser.add_argument('--nn_num_value', type=int, required=True)
-    parser.add_argument('--nn_width_adv', type=int, required=True)
-    parser.add_argument('--nn_num_adv', type=int, required=True)
-    parser.add_argument('--cluster_agg', type=str, required=True)
+    parser.add_argument('--nn_num', type=int, required=True)
+    parser.add_argument('--nn_width', type=int, required=True)
     parser.add_argument('--lr', type=float, required=True)
     parser.add_argument('--trial_id', type=str, required=True)
     parser.add_argument('--log_dir', type=str, required=True)
     sp = parser.parse_args()
-    sp.cluster_agg = [int(x) for x in sp.cluster_agg.strip('[]').split(',')]
     sp_dict = vars(sp)
 
     # Run
-    result = obj(sp_dict)
-    print(f"Trial ID: {sp.trial_id}, Result: {result}")
+    result, best_result_epoch = obj(sp_dict)
+    print(f"Trial ID: {sp.trial_id}, Result: {result}, Best Epoch: {best_result_epoch}")
 
     # Store results
     log_dir = sp.log_dir
     os.makedirs(f'{log_dir}/result', exist_ok=True)
     with open(f'{log_dir}/result/{sp.trial_id}.json', 'w') as f:
-        json.dump({'trial_id': sp.trial_id, 'result': result}, f)
+        json.dump({'trial_id': sp.trial_id, 'result': result, 'best_epoch': best_result_epoch}, f)

@@ -4,7 +4,7 @@ import numpy as np
 from schedgym.sched_env import SchedEnv 
 from baseline_agent import get_fit_func
 from tqdm import trange
-from common import stage_mean
+from common import trimmed_mean
 DATA_PATH = "data/Huawei-East-1-lt.csv"
 
 # Validation Result
@@ -51,8 +51,10 @@ def main():
         index = valid_inds[episode]  # Select a valid test index
         res_f.append(run_episode(env, first_fit, index))
         res_b.append(run_episode(env, bal_fit, index))
-    print(f"first fit: {stage_mean(res_f)}")
-    print(f"balance fit: {stage_mean(res_b)}")
+    print(f"first fit: {trimmed_mean(res_f)}")
+    print(f"first fit: {np.mean(res_f)}")
+    print(f"balance fit: {trimmed_mean(res_b)}")
+    print(f"balance fit: {np.mean(res_b)}")
 
 if __name__ == "__main__":
     main()

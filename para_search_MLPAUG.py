@@ -8,19 +8,15 @@ import os
 import signal
 from datetime import datetime
 from multiprocessing import Pool, Manager
-from para_search_func import generate_trial_id, print_best_result, save_results, visualize_results
+from para_search_func import generate_trial_id, print_best_result, save_results, visualize_results, get_topk_models
 
 def run_experiment(args):
     params, trial_id, log_dir = args
     cmd = [
-        "python", "run_exp.py",
-        "--nn_width_server", str(params['nn_width_server']),
-        "--nn_num_server", str(params['nn_num_server']),
-        "--nn_width_value", str(params['nn_width_value']),
-        "--nn_num_value", str(params['nn_num_value']),
-        "--nn_width_adv", str(params['nn_width_adv']),
-        "--nn_num_adv", str(params['nn_num_adv']),
-        "--cluster_agg", str(params['cluster_agg']),
+        "python", "run_exp_MLPAUG.py",
+        "--nn_num", str(params['nn_num']),
+        "--nn_width", str(params['nn_width']),
+        "--transform_num", str(params['transform_num']),
         "--lr", str(params['lr']),
         "--trial_id", trial_id,
         "--log_dir", log_dir
@@ -44,23 +40,20 @@ def run_experiment(args):
     return {
         'trial_id': trial_id,
         'params': params,
-        'result': result['result']
+        'result': result['result'],
+        'best_epoch': result['best_epoch'],
     }
 
 def main():
     # Define the hyperparameter space
     param_space = {
-        'nn_width_server': [4, 8, 16, 32],
-        'nn_num_server': [1, 2, 3, 4],
-        'nn_width_value': [4, 8, 16, 32],
-        'nn_num_value': [1, 2, 3],
-        'nn_width_adv': [4, 8, 16, 32],
-        'nn_num_adv': [1, 2, 3, 4],
-        'cluster_agg': [[0]],    # [[0], [1], [2], [0,1], [0,2], [1,2], [0,1,2]], {0: 'mean', 1: 'max', 2: 'std'}
-        'lr': [0.001, 0.01, 0.1]
+        'nn_num': [2],    
+        'nn_width': [32],  
+        'transform_num': [2, 3, 4, 5, 6, 8, 10, 12, 15, 20, 24, 30, 40, 60, 120],
+        'lr': [0.001]
     }
     # Total trials and number of concurrent trials
-    total_trials = 1000
+    total_trials = 300             
     concurrent_trials = 30
 
     # Create log directory
@@ -71,20 +64,21 @@ def main():
     os.makedirs(f'{log_dir}/result', exist_ok=True)
 
     # Generate all trial configurations (random combination, for huge param_space)
-    all_trials = []
-    for _ in range(total_trials):
-        params = {k: random.choice(v) for k, v in param_space.items()}
-        trial_id = generate_trial_id()
-        all_trials.append((params, trial_id, log_dir))
-    # Generate all trial configurations (normal combination, for small param_space)
-    # keys = list(param_space.keys())
-    # all_param_combinations = list(product(*[param_space[k] for k in keys]))
-    # trial_combinations = list(islice(cycle(all_param_combinations), total_trials))
     # all_trials = []
-    # for values in trial_combinations:
-    #     params = dict(zip(keys, values))
+    # for _ in range(total_trials):
+    #     params = {k: random.choice(v) for k, v in param_space.items()}
     #     trial_id = generate_trial_id()
     #     all_trials.append((params, trial_id, log_dir))
+        
+    # Generate all trial configurations (normal combination, for small param_space)
+    keys = list(param_space.keys())
+    all_param_combinations = list(product(*[param_space[k] for k in keys]))
+    trial_combinations = list(islice(cycle(all_param_combinations), total_trials))
+    all_trials = []
+    for values in trial_combinations:
+        params = dict(zip(keys, values))
+        trial_id = generate_trial_id()
+        all_trials.append((params, trial_id, log_dir))
 
     # Use multiprocessing with interruption handling
     manager = Manager()
@@ -117,6 +111,9 @@ def main():
     print_best_result(results)
     visualize_results(list(results), log_dir)
     save_results(results, log_dir)
+    model_dir = '/root/autodl-tmp/SPANE/models/mlp_aug'
+    get_topk_models(log_dir, model_dir, 11)
+    
 
 if __name__ == "__main__":
     main()

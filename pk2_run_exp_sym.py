@@ -16,7 +16,7 @@ from baseline_agent import get_fit_func
 from runx.logx import logx  # 储存reward等
 from datetime import datetime
 import json
-from common import linear_decay, time_format, stage_mean
+from common import linear_decay, time_format, trimmed_mean
 from config import Config 
 import argparse
 from tqdm import trange
@@ -175,7 +175,7 @@ if __name__ == "__main__":
     total_wts = obj(sp_dict)
 
     # 结果
-    mean_wts = stage_mean(total_wts)
+    mean_wts = trimmed_mean(total_wts)
     print(f"Sym Trial ID: {sp.trial_id}, Result: {mean_wts}")
     with open(f'result/S/mean.txt', 'a') as file:
         file.write(f'Sym trial_id: {sp.trial_id},  mean: {mean_wts} \n')

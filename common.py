@@ -16,7 +16,8 @@ def time_format(t):
     se = t 
     return hour, mi, se
 
-def stage_mean(data, percentage=0.1):
+def trimmed_mean(data, percentage=0.1):
+    ''' return the trimmed mean of data by excluding first percentage and last percentage, total 2*percentage data '''
     if not data:
         raise ValueError("The data list is empty")
 
