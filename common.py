@@ -8,14 +8,6 @@ import numpy as np
 def linear_decay(epoch, max_epoch, eps_start, eps_end):
     return max(eps_end, eps_start - (eps_start - eps_end) * (epoch / max_epoch))
 
-def time_format(t):
-    hour = t//3600
-    t = t % 3600 
-    mi = t//60 
-    t = t % 60 
-    se = t 
-    return hour, mi, se
-
 def trimmed_mean(data, percentage=0.1):
     ''' return the trimmed mean of data by excluding first percentage and last percentage, total 2*percentage data '''
     if not data:

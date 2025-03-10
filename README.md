@@ -25,7 +25,7 @@ There are two main types of RL agents:
 2. Neural network agents trained with DQN, located in the [`dqn`](dqn) folder.
 
 ## DQN Training and Hyperparameter Selection
-The `para_search_{method}.py` and `run_exp_{method}.py` scripts are designed for hyperparameter optimization and agent generation. The `method` variable can be set to one of the following algorithms: `SPANE`, `MLPDQN`, or `MLPAUG`. Specifically, `run_exp_{method}.py` serves as the training execution script, while `para_search_{method}.py` manages parallel runs of the training process. The following is an introduction to the code and results, with the last paragraph providing implementation suggestions.
+The `para_search_{method}.py` and `train_{method}.py` scripts are designed for hyperparameter optimization and agent generation. The `method` variable can be set to one of the following algorithms: `SPANE`, `MLPDQN`, or `MLPAUG`. Specifically, `train_{method}.py` serves as the training execution script, while `para_search_{method}.py` manages parallel runs of the training process. The following is an introduction to the code and results, with the last paragraph providing implementation suggestions.
 
 When executing `para_search_{method}.py`, it generates a folder `log_para_{time}` to store experimental outcomes, and the parameters of the `top_k` strongest-performing models across all trials are stored in the `models/{method}` folder. Users may customize the hyperparameter search space (`param_space`), total number of trials (`total_trials`), number of parallel tasks(`concurrent_trials`), whether to save the model (`save_model`), and number of stored models `top_k` within `para_search_{method}.py`. You can select the trial configuration generation method by commenting out specific sections of code.
 
@@ -51,7 +51,7 @@ The suggested approach (which is also the one used in this paper) is as follows:
 Notice that folder `models/{method}` currently stores the model parameters used in the paper.
 
 ## Experiment (Wait Time Analysis)
-
+`experiment_wt_schedule.py`, `test_sym.py`, `test_mlp.py`
 
 ## Experiment (Flexibility of Spane)
 

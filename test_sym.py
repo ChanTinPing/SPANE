@@ -1,5 +1,6 @@
 import os
 os.environ['TF_CPP_MIN_LOG_LEVEL'] = '3'
+# Prevent each parallel process from internally spawning multiple threads, avoiding CPU resource contention
 os.environ['OMP_NUM_THREADS'] = '1'
 os.environ['MKL_NUM_THREADS'] = '1'
 os.environ['OPENBLAS_NUM_THREADS'] = '1'
@@ -7,32 +8,32 @@ os.environ['VECLIB_MAXIMUM_THREADS'] = '1'
 os.environ['NUMEXPR_NUM_THREADS'] = '1'
 
 import numpy as np
-import torch as th
-from schedgym.sched_env import SchedEnv
-from dqn.agent import DoubleDQNAgent
-from dqn.learner import QLearner
-from dqn.replay_memory import ReplayMemory
-from baseline_agent import get_fit_func
-from runx.logx import logx  # 储存reward等
-from datetime import datetime
-import json
-from common import linear_decay, time_format, trimmed_mean
-from config import Config 
 import argparse
 from tqdm import trange
 import glob
+from types import SimpleNamespace
+from schedgym.sched_env import SchedEnv
+from dqn.agent import DoubleDQNAgent
+from baseline_agent import get_fit_func
+from common import trimmed_mean
+
 DATA_PATH = 'data/Huawei-East-1-lt.csv'
-valid_inds = np.load('data/test_random_time_1000.npy')
-model_dir = 'models/sym_new/'
-N = 5   
+test_inds = np.load('data/test_random_time_1000.npy')
+env_config = {
+    'env': 'recovering',
+    'N': 5,  
+    'cpu': 40,
+    'mem': 90,
+    'allow_release': True, 
+    'double_thr': 10,       # Memory threshold, if VM memory >= 10, the VM equally distributed
+}
+model_dir = 'models/sym_new/' 
 'env 记得改, 最后的结果记录也要改'
 
 def obj(sp):
     '1. 超参数'
     # 核心超参数
-    env = 'recovering'
-    args = Config(env)  # 初始化配置类
-    args.N = N
+    args = SimpleNamespace(**env_config)  # Initialize configuration class
     first_fit = get_fit_func(0, args.cpu, args.mem)
     args.valid_num = 1  # 进行验证时，做多少次实验取平均值
     args.alg = 'dqn'
@@ -44,8 +45,8 @@ def obj(sp):
     args.reward_type = 'basic'  # basic, balance
 
     # 可调核心超参数
-    # if args.mode == 'basic':
-    #     args.nn_width = [32, 32]  # 神经网络隐藏层的维度
+    if args.mode == 'basic':
+        args.nn_width = [32, 32]  # 神经网络隐藏层的维度
     if (args.mode == 'sym') or (args.mode == 'sym_easy'):
         args.nn_width = {
             'server': (sp['nn_width_server'], sp['nn_num_server']),
@@ -130,7 +131,7 @@ def obj(sp):
         total_wts = []
 
         for i in trange(args.valid_num):
-            initial_index = valid_inds[i]
+            initial_index = test_inds[i]
             val_return = run(env, initial_index, agent, None, 0, 1)  # 进行验证
             val_rewards.append(val_return)
             total_wait_time = env.get_attr('total_wait_time')

@@ -7,7 +7,7 @@ from multiprocessing import Pool
 def run_experiment_sym(args):
     params, trial_id = args
     cmd = [
-        "python", "pk2_run_exp_sym.py",
+        "python", "test_sym.py",
         "--nn_width_server", str(params['nn_width_server']),
         "--nn_num_server", str(params['nn_num_server']),
         "--nn_width_value", str(params['nn_width_value']),
@@ -24,7 +24,7 @@ def run_experiment_sym(args):
 def run_experiment_mlp(args):
     params, trial_id = args
     cmd = [
-        "python", "pk2_run_exp_mlp.py",
+        "python", "test_mlp.py",
         "--width", str(params['width']),
         "--layer_no", str(params['layer_no']),
         "--lr", str(params['lr']),

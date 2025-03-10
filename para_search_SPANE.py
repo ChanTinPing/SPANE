@@ -13,7 +13,8 @@ from para_search_func import generate_trial_id, print_best_result, save_results,
 def run_experiment(args):
     params, trial_id, log_dir = args
     cmd = [
-        "python", "run_exp_SPANE.py",
+        "python", "train.py",
+        "--method", "SPANE",
         "--nn_width_server", str(params['nn_width_server']),
         "--nn_num_server", str(params['nn_num_server']),
         "--nn_width_value", str(params['nn_width_value']),
@@ -61,8 +62,8 @@ def main():
         'lr': [0.001]                  # [0.001, 0.01, 0.1]
     }
     # Total trials and number of concurrent trials
-    total_trials = 900                 # 1000
-    concurrent_trials = 30
+    total_trials = 2                 # 1000
+    concurrent_trials = 2
     # Save top k strongest model
     save_model = False
     model_dir = 'models/spane'
