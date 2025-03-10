@@ -13,7 +13,8 @@ from para_search_func import generate_trial_id, print_best_result, save_results,
 def run_experiment(args):
     params, trial_id, log_dir = args
     cmd = [
-        "python", "train_MLPAUG.py",
+        "python", "train.py",
+        "--method", "MLPAUG",
         "--nn_num", str(params['nn_num']),
         "--nn_width", str(params['nn_width']),
         "--transform_num", str(params['transform_num']),
