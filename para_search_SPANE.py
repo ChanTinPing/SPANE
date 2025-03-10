@@ -63,7 +63,11 @@ def main():
     # Total trials and number of concurrent trials
     total_trials = 900                 # 1000
     concurrent_trials = 30
-
+    # Save top k strongest model
+    save_model = False
+    model_dir = 'models/spane'
+    top_k = 11
+    
     # Create log directory
     current_time = datetime.now()
     formatted_time = current_time.strftime("%Y%m%d_%H%M%S")
@@ -119,8 +123,8 @@ def main():
     print_best_result(results)
     visualize_results(list(results), log_dir)
     save_results(results, log_dir)
-    model_dir = '/root/autodl-tmp/SPANE/models/spane'
-    get_topk_models(log_dir, model_dir, 11)
+    if save_model:
+        get_topk_models(log_dir, model_dir, top_k)
     
 
 if __name__ == "__main__":

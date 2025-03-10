@@ -24,12 +24,16 @@ There are two main types of RL agents:
 1. Agents that use heuristic methods, located in the [`baseline_agent`](baseline_agent) folder. For more details, refer to the comments inside, including those in [`__init__.py`](baseline_agent/__init__.py).
 2. Neural network agents trained with DQN, located in the [`dqn`](dqn) folder.
 
-## DQN Training + Hyperparameters Selection
-The `para_search_{method}.py` and `run_exp_{method}.py` scripts are used to find the best-performing hyperparameters and generate the corresponding agent. The `method` can be one of the following: `SPANE`, `MLPDQN`, or `MLPAUG`. `run_exp_{method}.py` is the training script, while `para_search_{method}.py` is responsible for running `run_exp.py` in parallel. Running `para_search_{method}.py` will create a `log_para_{time}` directory to store the results, and it will store the most strongest models' parameters among experiments in folder `models_{method}`. You can modify the `param_space`, `total_trials`, `concurrent_trials` in `para_search_{method}.py`, and select the method for generating trial configurations by commenting out other trial configuration sections.
+## DQN Training and Hyperparameter Selection
+The `para_search_{method}.py` and `run_exp_{method}.py` scripts are designed for hyperparameter optimization and agent generation. The `method` variable can be set to one of the following algorithms: `SPANE`, `MLPDQN`, or `MLPAUG`. Specifically, `run_exp_{method}.py` serves as the training execution script, while `para_search_{method}.py` manages parallel runs of the training process. The following is an introduction to the code and results, with the last paragraph providing implementation suggestions.
 
-- The **`fig`** subfolder stores the results of various hyperparameters in the form of distribution plots.  
-- The **`result`** subfolder contains the hyperparameters and results of each experiment, with an `all_results.json` file that consolidates the results of all experiments.  
-- The **`tensorboard`** subfolder stores model data and process data (such as training and validation loss) for each experiment. Model parameters are stored in the **`models`** subfolder within the corresponding experiment directory. 
+When executing `para_search_{method}.py`, it generates a folder `log_para_{time}` to store experimental outcomes, and the parameters of the `top_k` strongest-performing models across all trials are stored in the `models/{method}` folder. Users may customize the hyperparameter search space (`param_space`), total number of trials (`total_trials`), number of parallel tasks(`concurrent_trials`), whether to save the model (`save_model`), and number of stored models `top_k` within `para_search_{method}.py`. You can select the trial configuration generation method by commenting out specific sections of code.
+
+The `log_para_{time}` directory organizes results as follows:  
+- The **`fig`** subfolder contains distribution plots visualizing hyperparameter performance.  
+- The **`result`** subfolder stores the hyperparameters and corresponding results for each experiment.
+- The `all_results.json` file gather the outcomes of all experiments. 
+- The **`tensorboard`** subfolder stores model checkpoints and training progress (e.g., loss curves) for each experiment. Inside each experiment's specific directory, the **`models`** subfolder contains the trained model parameters.
 
 To view process data, use the command:  
 ```bash
@@ -39,6 +43,12 @@ This command displays data for all experiments. To view data for a specific expe
 ```bash
 tensorboard --logdir=log_para_{time}/{trial_id}_dqn
 ```
+
+The suggested approach (which is also the one used in this paper) is as follows:  
+1. Set a broad hyperparameter space and use random combination to generate hyperparameter sets. After running the experiments, analyze the plots in the `fig` folder and eliminate the poor-performing hyperparameter values.  
+2. Once you have a smaller hyperparameter space, use normal combination to find the best hyperparameter set.  
+3. After identifying the best hyperparameters, set `save_model=True` and run experiments to store models' parameters.
+Notice that folder `models/{method}` currently stores the model parameters used in the paper.
 
 ## Experiment (Wait Time Analysis)
 
