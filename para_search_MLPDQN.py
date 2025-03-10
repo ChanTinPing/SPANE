@@ -55,7 +55,7 @@ def main():
     concurrent_trials = 30
     # Save top k strongest model
     save_model = False
-    model_dir = 'models/mlp'
+    model_dir = 'models/MLPDQN'
     top_k = 11
 
     # Create log directory

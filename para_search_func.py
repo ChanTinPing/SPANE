@@ -61,3 +61,7 @@ def get_topk_models(log_dir: str, model_dir: str, k: int) -> None:
         src_path = os.path.join(log_dir, 'tensorboard', f'{trial_id}_dqn', 'models', f"{best_epoch}.th")
         dst_path = os.path.join(model_dir, f"{trial_id}_{best_epoch}.th")
         shutil.copy(src_path, dst_path)
+
+    output_path = os.path.join(model_dir, 'results.json')
+    with open(output_path, 'w') as f:
+        json.dump(topk_entries, f, indent=4, ensure_ascii=False)

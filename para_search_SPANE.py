@@ -62,11 +62,11 @@ def main():
         'lr': [0.001]                  # [0.001, 0.01, 0.1]
     }
     # Total trials and number of concurrent trials
-    total_trials = 2                 # 1000
-    concurrent_trials = 2
+    total_trials = 900                 # 1000
+    concurrent_trials = 30
     # Save top k strongest model
     save_model = False
-    model_dir = 'models/spane'
+    model_dir = 'models/SPANE'
     top_k = 11
     
     # Create log directory

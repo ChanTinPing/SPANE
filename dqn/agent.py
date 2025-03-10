@@ -227,5 +227,5 @@ class DoubleDQNAgent:  # Split the DQN network into two parts to improve stabili
         th.save(self.online_net.state_dict(), filepath)
 
     def load(self, filepath):
-        self.online_net.load_state_dict(th.load(filepath))
+        self.online_net.load_state_dict(th.load(filepath, weights_only=True))
         self.update_target_network()

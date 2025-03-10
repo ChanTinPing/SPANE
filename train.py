@@ -21,8 +21,8 @@ from dqn.replay_memory import ReplayMemory
 from baseline_agent import get_fit_func
 from common import linear_decay, trimmed_mean
 
-DATA_PATH = f'data/Huawei-East-1-lt.csv'
-valid_inds = np.load(f'data/test_random_time_1000.npy')
+DATA_PATH = 'data/Huawei-East-1-lt.csv'
+valid_inds = np.load('data/valid_random_time_150.npy')
 env_config = {
     'env': 'recovering',
     'N': 5,  
@@ -31,30 +31,30 @@ env_config = {
     'allow_release': True, 
     'double_thr': 10,       # Memory threshold, if VM memory >= 10, the VM equally distributed
 }
+first_fit = get_fit_func(0, env_config['cpu'], env_config['mem'])
 
-def main(sp: dict):
-    # 1. Hyperparameters
+def main(sp: argparse.Namespace):
+    '1. Hyperparameters'
     args = SimpleNamespace(**env_config)  # Initialize configuration class
     args.alg = 'dqn'
-    args.method = sp['method']
+    args.method = sp.method
     if args.method == 'MLPDQN' or args.method == 'MLPAUG':
         args.mode = 'basic'  
     elif args.method == 'SPANE':
         args.mode = 'sym'
     args.reward_type = 'basic'
-    args.exceed_vm = 20
+    args.extra_vm_num = 40
 
     if args.mode == 'basic':
-        args.nn_width = [sp['nn_width']] * sp['nn_num'] # Neural network hidden layer dimensions
+        args.nn_width = [sp.width] * sp.layer_no   # Neural network hidden layer dimensions
     if args.mode == 'sym':
         args.nn_width = {
-            'server': (sp['nn_width_server'], sp['nn_num_server']),
-            'value': (sp['nn_width_value'], sp['nn_num_value']),
-            'adv': (sp['nn_width_adv'], sp['nn_num_adv'])
+            'server': (sp.nn_width_server, sp.nn_num_server),
+            'value': (sp.nn_width_value, sp.nn_num_value),
+            'adv': (sp.nn_width_adv, sp.nn_num_adv)
         }
         aggs_dicts = {0: 'mean', 1: 'max', 2: 'std'}
-        args.cluster_agg = [aggs_dicts[i] for i in sp['cluster_agg']]
-    args.reward_weight = 0
+        args.cluster_agg = [aggs_dicts[i] for i in sp.cluster_agg]
 
     # DQN-specific parameters
     args.eps_1 = 0.6  # At the beginning of online training, the probability of the agent selecting an action randomly
@@ -62,12 +62,12 @@ def main(sp: dict):
     args.n_step = 50  # Multi-step return for the loss function (larger n_step reduces bias but increases variance)
     args.memory_capacity = 100000  # Size of the replay buffer
     args.weight_decay = 1e-8  # L2 regularization weight
-    args.lr = sp['lr']  # Initial learning rate
+    args.lr = sp.lr # Initial learning rate
     args.scheduler = 'step'  # Type of learning rate scheduler, see learner for details
     args.gamma = 0.95  # Discount factor for the n-step reward
 
     # Epoch parameters
-    args.online_epoch = 5  # Number of batches of data learned in each epoch
+    args.online_epoch = 5000  # Number of batches of data learned in each epoch
     if args.method == 'MLPAUG':
         args.transform_num = sp['transform_num']
         args.run_no = None  # Number of data collections with the environment in each epoch
@@ -76,16 +76,16 @@ def main(sp: dict):
         args.run_no = 1  # Number of data collections with the environment in each epoch
         args.run_interval = None 
     args.batch_size = 1024
-    args.valid_interval = 2  # Interval (in epochs) for validation
-    args.valid_num = 1  # Number of experiments during validation, average taken
+    args.valid_interval = 250  # Interval (in epochs) for validation
+    args.valid_num = 150  # Number of experiments during validation, average taken
     args.first_tot_wt = 235180.14  # Trimmed average result of the first valid_num experiments for First Fit during validation. Change this if valid_time or valid_num changes.
     args.bal_tot_wt = 199748.26    # Trimmed average result of the first valid_num experiments for Balance Fit during validation
     args.target_update_interval = 100
 
     # Create log folder with current timestamp
-    logpath = os.path.join(sp['log_dir'], 'tensorboard', f"{sp['trial_id']}_{args.alg}")
+    logpath = os.path.join(sp.log_dir, 'tensorboard', f"{sp.trial_id}_{args.alg}")
 
-    # 2. Functions 
+    '2. Functions'
     def generate_random_permutations(N, num):
         ''' generate num random permutations, include identity, only used by MLPAUG '''
         sequence = list(range(N))
@@ -135,9 +135,9 @@ def main(sp: dict):
         state = env.reset(initial_index, exceed_vm=1)
         done = False
         while not done:
-            action = get_fit_func(0, args.cpu, args.mem)(state)
+            action = first_fit(state)
             state, _, done = env.step(action)
-        N_vm = env.get_attr('length_vm') + 40
+        N_vm = env.get_attr('length_vm') + args.extra_vm_num
 
         # Reset environment with N_vm or fallback
         try:
@@ -202,11 +202,11 @@ def main(sp: dict):
         initial_index = np.random.randint(0, 50000)
         return run(env, initial_index, agent, memory_on, eps, False)
 
-    # 3. Preparation
+    '3. Preparation'
     logx.initialize(logdir=logpath, coolname=True, tensorboard=True)
     print(f"logpath ({logpath}) created")
 
-    env = SchedEnv(args.N, args.cpu, args.mem, DATA_PATH, args.double_thr, args.reward_type, args.reward_weight)
+    env = SchedEnv(args.N, args.cpu, args.mem, DATA_PATH, args.double_thr, args.reward_type)
     agent = DoubleDQNAgent(args, args.mode)
     memory_on = ReplayMemory(args.memory_capacity, args.n_step, args.gamma)
     learner = QLearner(agent, args)
@@ -221,7 +221,7 @@ def main(sp: dict):
     with open(file_path, 'w') as file:
         file.write(args_json)
 
-    # 4. Pre-collect data
+    '4. Pre-collect data'
     if args.method == 'MLPAUG':
         precollect_epoch = int(100 + (args.transform_num-1) / args.transform_num)
     else:
@@ -231,7 +231,7 @@ def main(sp: dict):
         eps = args.eps_1
         run(env, initial_time, agent, memory_on, eps, False)
 
-    # 5. Online training
+    '5. Online training'
     epoch = 0
     best_result = -100000
     best_result_epoch = 0
@@ -280,11 +280,11 @@ def parser_add_specific_args(parser, method):
         parser.add_argument('--nn_num_adv', type=int, required=True)
         parser.add_argument('--cluster_agg', type=str, required=True)
     elif method == 'MLPDQN':
-        parser.add_argument('--nn_num', type=int, required=True)
-        parser.add_argument('--nn_width', type=int, required=True)    
+        parser.add_argument('--layer_no', type=int, required=True)
+        parser.add_argument('--width', type=int, required=True)    
     elif method == 'MLPAUG':
-        parser.add_argument('--nn_num', type=int, required=True)
-        parser.add_argument('--nn_width', type=int, required=True)
+        parser.add_argument('--layer_no', type=int, required=True)
+        parser.add_argument('--width', type=int, required=True)
         parser.add_argument('--transform_num', type=int, required=True)
     else:
         raise ValueError(f"Unsupported method: {method}. Valid options are 'SPANE', 'MLPDQN', or 'MLPAUG'.")
@@ -308,7 +308,7 @@ if __name__ == "__main__":
     sp_dict = vars(sp)
 
     # Run
-    result, best_result_epoch = main(sp_dict)
+    result, best_result_epoch = main(sp)
     print(f"Trial ID: {sp.trial_id}, Result: {result}, Best Epoch: {best_result_epoch}")
 
     # Store results

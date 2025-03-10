@@ -21,13 +21,13 @@ When selecting the VM queue, we first pick an initial VM from the dataset and ap
 
 ## Methods
 There are two main types of RL agents:  
-1. Agents that use heuristic methods, located in the [`baseline_agent`](baseline_agent) folder. For more details, refer to the comments inside, including those in [`__init__.py`](baseline_agent/__init__.py).
+1. Agents that use heuristic methods, located in the [`baseline_agent`](baseline_agent) folder. For more details, refer to the comments inside, including those in [`__init__.py`](baseline_agent/__init__.py). Use `baseline_valid_result.py` to obtain their performance.
 2. Neural network agents trained with DQN, located in the [`dqn`](dqn) folder.
 
 ## DQN Training and Hyperparameter Selection
 The `para_search_{method}.py` and `train.py` scripts are designed for hyperparameter optimization and agent generation. The `method` variable can be set to one of the following algorithms: `SPANE`, `MLPDQN`, or `MLPAUG`. Specifically, `train.py` serves as the training execution script, while `para_search_{method}.py` manages parallel runs of the training process. The following is an introduction to the code and results, with the last paragraph providing implementation suggestions.
 
-When executing `para_search_{method}.py`, it generates a folder `log_para_{time}` to store experimental outcomes, and the parameters of the `top_k` strongest-performing models across all trials are stored in the `models/{method}` folder. Users may customize the hyperparameter search space (`param_space`), total number of trials (`total_trials`), number of parallel tasks(`concurrent_trials`), whether to save the model (`save_model`), and number of stored models `top_k` within `para_search_{method}.py`. You can select the trial configuration generation method by commenting out specific sections of code.
+When executing `para_search_{method}.py`, it generates a folder `log_para_{time}` to store experimental outcomes, and the parameters of the `top_k` strongest-performing models across all trials are stored in the `models/{method}` folder. Users may customize the hyperparameter search space (`param_space`), total number of trials (`total_trials`), number of parallel tasks (`concurrent_trials`), whether to save the model (`save_model`), and number of stored models `top_k` within `para_search_{method}.py`. You can select the trial configuration generation method by commenting out specific sections of code.
 
 The `log_para_{time}` directory organizes results as follows:  
 - The **`fig`** subfolder contains distribution plots visualizing hyperparameter performance.  
@@ -51,7 +51,13 @@ The suggested approach (which is also the one used in this paper) is as follows:
 Notice that folder `models/{method}` currently stores the model parameters used in the paper.
 
 ## Experiment (Wait Time Analysis)
-`experiment_wt_schedule.py`, `test_sym.py`, `test_mlp.py`
+The files `experiment_wt_schedule.py` and `test.py` are used to analyze the wait time of different methods. 
+- `test.py` is the testing script that runs 1,000 experiments for a single model.
+- `experiment_wt_schedule.py` is responsible for running these experiments in parallel.
+
+After running `experiment_wt_schedule.py`, the results are saved in the folder `result/wait_time`. 
+- The file `result.txt` stores the trimmed mean of the results for all models.
+- The subfolders named `{method}` store the results of the 1,000 experiments for each individual model.
 
 ## Experiment (Flexibility of Spane)
 
