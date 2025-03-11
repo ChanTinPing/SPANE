@@ -1,7 +1,7 @@
 # SPANE: A Deep Reinforcement Learning Approach for Dynamic VM Scheduling
 This code is the experimental implementation from the paper *"Symmetry-Preserving Architecture for Multi-NUMA Environments (SPANE): A Deep Reinforcement Learning Approach for Dynamic VM Scheduling."* The experimental environment for scheduling in this study is built upon modifications to [VMAgent](https://github.com/mail-ecnu/VMAgent), a platform designed for applying Reinforcement Learning (RL) to Virtual Machine (VM) scheduling tasks.
 
-Due to time constraints, the currently available code has not been fully organized, and it cannot run properly. We will reorganize and provide the complete code, along with full instructions, by March 5.
+Due to time constraints, the currently available code has not been fully organized, and it cannot run properly. We will reorganize and provide the complete code, along with full instructions soon.
 
 
 ## License
