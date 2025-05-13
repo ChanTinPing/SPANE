@@ -1,14 +1,15 @@
-' Compare the results of various methods (SPANE, MLPDQN, MLPAUG).'
+' Compare the results of various methods (SPANE, MLPDQN, MLPAUG). '
 
 import subprocess
 import json
+import os
 from multiprocessing import Pool
 
 def run_experiment(args):
     params, trial_id, method = args
     if method == 'SPANE':
         cmd = [
-            "python", "test.py",
+            "python", "wait_time_exp.py",
             "--method", method,
             "--nn_width_server", str(params['nn_width_server']),
             "--nn_num_server", str(params['nn_num_server']),
@@ -21,7 +22,7 @@ def run_experiment(args):
         ]
     elif (method == 'MLPDQN') or (method == 'MLPAUG'):
         cmd = [
-            "python", "test.py",
+            "python", "wait_time_exp.py",
             "--method", method,
             "--width", str(params['width']),
             "--layer_no", str(params['layer_no']),
@@ -31,7 +32,7 @@ def run_experiment(args):
 
 def main():
     methods = ['SPANE', 'MLPDQN', 'MLPAUG']
-    concurrent_trials = 30
+    concurrent_trials = 20
     
     # Obtain trials
     trials = []
@@ -45,6 +46,7 @@ def main():
             trial_id = trial_data['trial_id']
             trials.append((params, trial_id, method))
 
+    os.makedirs('result/wait_time', exist_ok=True)
     # parallel run experiment
     with Pool(processes=concurrent_trials) as pool:
         pool.imap_unordered(run_experiment, trials)

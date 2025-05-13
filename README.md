@@ -3,7 +3,6 @@ This code is the experimental implementation from the paper *"Symmetry-Preservin
 
 Due to time constraints, the currently available code has not been fully organized, and it cannot run properly. We will reorganize and provide the complete code, along with full instructions soon.
 
-
 ## License
 This project is licensed under the MIT License - see the [LICENSE](./LICENSE) file for details.
 
@@ -21,7 +20,7 @@ When selecting the VM queue, we first pick an initial VM from the dataset and ap
 
 ## Methods
 There are two main types of RL agents:  
-1. Agents that use heuristic methods, located in the [`baseline_agent`](baseline_agent) folder. For more details, refer to the comments inside, including those in [`__init__.py`](baseline_agent/__init__.py). Use `baseline_valid_result.py` to obtain their performance.
+1. Agents that use heuristic methods, located in the [`baseline_agent`](baseline_agent) folder. For more details, refer to the comments inside, including those in [`__init__.py`](baseline_agent/__init__.py). Use `baseline.py` to obtain their performance.
 2. Neural network agents trained with DQN, located in the [`dqn`](dqn) folder.
 
 ## DQN Training and Hyperparameter Selection
@@ -51,13 +50,23 @@ The suggested approach (which is also the one used in this paper) is as follows:
 Notice that folder `models/{method}` currently stores the model parameters used in the paper.
 
 ## Experiment (Wait Time Analysis)
-The files `experiment_wt_schedule.py` and `test.py` are used to analyze the wait time of different methods. 
-- `test.py` is the testing script that runs 1,000 experiments for a single model.
-- `experiment_wt_schedule.py` is responsible for running these experiments in parallel.
+The files `wait_time_scheduler.py`, `wait_time_exp.py` and `wait_time_stats.py` are used to analyze the wait time of different methods (Section V-B). 
+- `wait_time_exp.py` runs 1,000 experiments for a single model and generate the results.
+- `wait_time_scheduler.py` is responsible for running these experiments in parallel.
+- `wait_time_stats.py` is used to summarize the results.
 
-After running `experiment_wt_schedule.py`, the results are saved in the folder `result/wait_time`. 
+After running `wait_time_scheduler.py`, the results are saved in the folder `result/wait_time`. 
 - The file `result.txt` stores the trimmed mean of the results for all models.
 - The subfolders named `{method}` store the results of the 1,000 experiments for each individual model.
+- After running `wait_time_stats.py`, a CSV file named `result.csv` was generated to summarize the results of different methods.
 
-## Experiment (Flexibility of Spane)
+## Experiment (Flexibility of SPANE)
+The files `flex_scheduler.py` and `flex_exp.py` are used to analyze the flexibility of SPANE (Section V-C). 
+- `flex_exp.py` runs 1,000 experiments for a single model.
+- `flex_scheduler.py` is responsible for running these experiments in parallel.
+- `flex_stats.py` is used to summarize the results.
 
+After running `flex_scheduler.py`, the results are saved in the folder `result/flex`. 
+- The file `result.txt` stores the trimmed mean of the results for all models.
+- The subfolders named `{PM_num}` store the results of the 1,000 experiments for each PM number.
+- After running `flex_stats.py`, a CSV file named `result.csv` was generated to summarize the results of different PM number.

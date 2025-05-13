@@ -1,0 +1,4 @@
+method,trimmed_mean,mean_of_top3
+MLPAUG,159568,133852
+MLPDQN,132144,117552
+SPANE,75803,63697

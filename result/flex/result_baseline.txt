@@ -1,0 +1,8 @@
+N: 2, first fit: 53866.53875, balance fit: 38610.82625
+N: 3, first fit: 52483.255, balance fit: 38832.1
+N: 4, first fit: 44461.2425, balance fit: 37829.27625
+N: 5, first fit: 89822.5225, balance fit: 86009.90875
+N: 6, first fit: 67176.55, balance fit: 62643.88
+N: 7, first fit: 129369.66375, balance fit: 118267.32125
+N: 8, first fit: 182132.76875, balance fit: 176528.5075
+N: 9, first fit: 201328.98, balance fit: 181041.9925

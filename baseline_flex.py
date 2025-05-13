@@ -1,5 +1,5 @@
 ''' Evaluate the results of First Fit and Balance Fit '''
-
+import os
 import numpy as np
 from schedgym.sched_env import SchedEnv 
 from baseline_agent import get_fit_func
@@ -7,12 +7,8 @@ from tqdm import trange
 from common import trimmed_mean
 DATA_PATH = "data/Huawei-East-1-lt.csv"
 
-# Validation Result
-valid_inds = np.load('data/valid_random_time_150.npy')
-num_episodes = 150
-# Test Result
-# valid_inds = np.load('data/test_random_time_1000.npy')
-# num_episodes = 1000
+valid_inds = np.load('data/test_random_time_1000.npy')
+num_episodes = 1000
 
 first_fit = get_fit_func(0, 40, 90)
 def run_episode(env: SchedEnv, agent, index):
@@ -34,9 +30,8 @@ def run_episode(env: SchedEnv, agent, index):
 
     return env.get_attr('total_wait_time')
 
-def main():
+def main(N: int):
     # Environment parameters
-    N = 5  # Number of servers
     cpu = 40  # Total CPU per NUMA
     mem = 90  # Total memory per NUMA
 
@@ -51,10 +46,13 @@ def main():
         index = valid_inds[episode]  # Select a valid test index
         res_f.append(run_episode(env, first_fit, index))
         res_b.append(run_episode(env, bal_fit, index))
-    print(f"first fit: {trimmed_mean(res_f)}")
-    print(f"first fit: {np.mean(res_f)}")
-    print(f"balance fit: {trimmed_mean(res_b)}")
-    print(f"balance fit: {np.mean(res_b)}")
+        
+    print(f"N: {N}, first fit: {trimmed_mean(res_f)}")
+    print(f"N: {N}, balance fit: {trimmed_mean(res_b)}")
+    with open('result/flex/result_baseline.txt', 'a', encoding='utf-8') as f:
+        f.write(f"N: {N}, first fit: {trimmed_mean(res_f)}, balance fit: {trimmed_mean(res_b)}\n")
 
 if __name__ == "__main__":
-    main()
+    os.makedirs('result/flex/', exist_ok=True)
+    for N in range(2,10):
+        main(N)
